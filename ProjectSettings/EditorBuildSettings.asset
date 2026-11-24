@@ -17,6 +17,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_LowSignal/Scenes/UnderwaterCity.unity
     guid: 574935342c828b444b611c49f7589062
+  - enabled: 1
+    path: Assets/_LowSignal/Scenes/DeepReach.unity
+    guid: ecd4816f01c99eb4d9300795c1c06638
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
