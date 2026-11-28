@@ -29,6 +29,8 @@ public sealed class SaveGameService : MonoBehaviour
     public bool IsLoading { get; private set; }
     public string SavePath => Store.FilePath;
     public bool HasSaveFiles => File.Exists(Store.FilePath) || File.Exists(Store.BackupPath);
+    /// <summary>True until the autosave made on arriving in an area is written, so intros can wait for it.</summary>
+    public bool ArrivalSavePending => saveOnArrival;
     public string LastMessage { get; private set; }
     public event Action<string> Message;
     private SaveGameStore store;
@@ -38,6 +40,7 @@ public sealed class SaveGameService : MonoBehaviour
     private PlayerSaveData travelingPlayer;
     private bool sessionActive;
     private bool saveOnArrival;
+    private bool newGameIntroPending;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetStatics() { instance = null; IsPaused = false; pauseChangedFrame = -1; }
@@ -71,7 +74,19 @@ public sealed class SaveGameService : MonoBehaviour
         pendingLoad = null;
         travelingPlayer = null;
         saveOnArrival = true;
+        newGameIntroPending = true;
         LastMessage = null;
+    }
+
+    /// <summary>
+    /// True once after Start Game, for the first area that loads; taking it clears it, so loading a save or
+    /// travelling never replays a new-game intro (see ShallowsCrashIntro).
+    /// </summary>
+    public bool TakeNewGameIntro()
+    {
+        bool pending = newGameIntroPending;
+        newGameIntroPending = false;
+        return pending;
     }
 
     private static SaveGameData NewSession() => new SaveGameData { format = SaveGameStore.Format, version = SaveGameStore.Version };
@@ -110,6 +125,7 @@ public sealed class SaveGameService : MonoBehaviour
             return false;
         }
         pendingLoad = data;
+        newGameIntroPending = false;
         string recoveryMessage = information;
         if (!LoadScene(data.currentScene, out information)) { pendingLoad = null; return false; }
         information = recoveryMessage ?? "Loading saved game...";
